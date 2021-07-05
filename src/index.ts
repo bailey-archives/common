@@ -14,6 +14,9 @@ export * from './logging/LogLevel';
 export * from './logging/LogWriter';
 export * from './logging/Logger';
 
+// Polyfills
+export * from './polyfills/Buffer';
+
 // Promises
 export * from './promises/PromiseCompletionSource';
 export * from './promises/PromiseTimeoutSource';
