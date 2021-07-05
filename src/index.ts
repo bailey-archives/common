@@ -23,4 +23,5 @@ export * from './reflection/ReflectionClass';
 export * from './reflection/ReflectionMethod';
 
 // Types
+export * from './types/json';
 export * from './types/types';
