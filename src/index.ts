@@ -1,3 +1,6 @@
+// Dependency injection
+export * from './container/Container';
+
 // Decorators
 export * from './decorators/Reflectable';
 
