@@ -10,15 +10,24 @@ import { PromiseCompletionSource } from './PromiseCompletionSource';
  */
  export class PromiseTimeoutSource {
 
+	private _action?: Action;
+
 	private _source: PromiseCompletionSource<boolean>;
 	private _timeout: NodeJS.Timeout;
 
 	private _isFinished = false;
 	private _isCancelled = false;
 
-	public constructor(public readonly milliseconds: number, public readonly action: Action) {
+	public constructor(public readonly milliseconds: number, _action?: Action) {
 		this._source = new PromiseCompletionSource();
-		this._timeout = setTimeout(() => this._execute(), milliseconds);
+
+		if (_action !== undefined) {
+			this._timeout = setTimeout(() => this._execute(), milliseconds);
+			this._action = _action;
+		}
+		else {
+			this._timeout = setTimeout(() => this._source.setResult(true), milliseconds);
+		}
 	}
 
 	/**
@@ -33,12 +42,14 @@ import { PromiseCompletionSource } from './PromiseCompletionSource';
 	 * Internal executor for the timeout.
 	 */
 	private async _execute() {
-		try {
-			await Promise.resolve(this.action());
-			this._source.setResult(true);
-		}
-		catch (err) {
-			this._source.setError(err);
+		if (this._action) {
+			try {
+				await Promise.resolve(this._action());
+				this._source.setResult(true);
+			}
+			catch (err) {
+				this._source.setError(err);
+			}
 		}
 	}
 
@@ -72,6 +83,41 @@ import { PromiseCompletionSource } from './PromiseCompletionSource';
 	 */
 	public get isCancelled() {
 		return this._isCancelled;
+	}
+
+	/**
+	 * Attaches callbacks for the resolution and/or rejection of the Promise.
+	 *
+	 * @param onfulfilled
+	 * @param onrejected
+	 * @returns
+	 */
+	public then(
+		onfulfilled?: ((value: boolean) => void | PromiseLike<void>) | null | undefined,
+		onrejected?: ((reason: any) => void | PromiseLike<void>) | null | undefined
+	): Promise<void> {
+		return this._source.promise.then(onfulfilled, onrejected);
+	}
+
+	/**
+	 * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The resolved value
+	 * cannot be modified from the callback.
+	 *
+	 * @param onfinally
+	 * @returns
+	 */
+	public finally(onfinally?: (() => void) | null | undefined): Promise<boolean> {
+		return this._source.promise.finally(onfinally);
+	}
+
+	/**
+	 * Attaches a callback for only the rejection of the Promise.
+	 *
+	 * @param onrejected
+	 * @returns
+	 */
+	public catch(onrejected?: ((reason: any) => void | PromiseLike<void>) | null | undefined): Promise<boolean | void> {
+		return this._source.promise.catch(onrejected);
 	}
 
 }
