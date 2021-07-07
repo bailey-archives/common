@@ -20,7 +20,7 @@ export class Logger extends EventEmitter<Events> {
 	 */
 	public options: util.InspectOptions = {};
 
-	public constructor(protected name: string, protected parent?: Logger) {
+	public constructor(protected name: string = 'app', protected parent?: Logger) {
 		super();
 
 		// Inherit from the parent if applicable
