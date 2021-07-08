@@ -4,6 +4,9 @@
 	"description": "A collection of utilities that I often use in my projects.",
 	"author": "Bailey Herbert <hello@bailey.sh>",
 	"license": "MIT",
+	"files": [
+		"dist/**/*"
+	],
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsc -w"
