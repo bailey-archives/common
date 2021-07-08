@@ -46,7 +46,20 @@ This is a simple container used to create and cache singletons with automatic de
 ```ts
 import { Container } from '@baileyherbert/common';
 
+// Create a container
+// Generally you want a single container for an entire application
 const container = new Container();
+
+// Register objects that can be injected based on type when classes need them
+container.register(new Dependency());
+
+// Create singletons with dependency injection
+// This instance will be cached and reused for future calls
+const instance = container.singleton(ClassType);
+
+// Create new instances with dependency injection
+// These instances are always fresh and never cached
+const instance = container.make(ClassType);
 ```
 
 ---
