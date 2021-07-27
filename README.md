@@ -23,6 +23,8 @@ npm install @baileyherbert/common
 - [Reflection](#reflection)
 	- [`ReflectionClass`](#reflectionclass)
 	- [`ReflectionMethod`](#reflectionmethod)
+- [Native](#native)
+	- [`Command`](#command)
 - [Decorators](#decorators)
 	- [`@Reflectable`](#reflectable)
 	- [`@Resolvable`](#resolvable)
@@ -289,6 +291,57 @@ method.invoke(instance);
 // You can also create a closure to call the method later
 const closure = method.createClosure(instance);
 closure(...args);
+```
+
+---
+
+## Native
+
+### `Command`
+
+This is a utility class that helps run a command or process. It provides an interface that can make it easier to manage
+command line arguments, and offers simple events to listen for data or exit codes.
+
+```ts
+import { Command } from '@baileyherbert/common';
+
+const command = new Command('ffmpeg');
+
+command.setOption('-i', 'input_0.mp4');
+command.setOption('-i', 'input_1.mp4');
+command.setOption('-c', 'copy');
+command.setOption('-map', '0:v:0');
+command.setOption('-map', '1:a:0');
+command.setFlag('-shortest');
+command.setParameter('output.mp4');
+
+// Listen for data
+command.on('stderr', data => console.error(data));
+command.on('stdout', data => console.log(data));
+
+// The 'output' command is a combination of stderr and stdout
+command.on('output', data => console.log(data));
+
+// Start the process and wait for it to exit
+const exitCode = await command.execute();
+```
+
+The class offers a `logging` option that will record all process output to an internal buffer. You can then read,
+write, and clear the logged output.
+
+```ts
+// Set logging to true before executing the command
+command.logging = true;
+await command.execute();
+
+// Get all output so far as a Buffer
+const output = command.getLog();
+
+// Write output to a file
+await command.writeLog('filename.txt');
+
+// Clear the log
+command.clearLog();
 ```
 
 ---

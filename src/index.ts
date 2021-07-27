@@ -14,6 +14,9 @@ export * from './logging/LogLevel';
 export * from './logging/LogWriter';
 export * from './logging/Logger';
 
+// Native
+export * from './native/commands/Command';
+
 // Polyfills
 export * from './polyfills/Buffer';
 
