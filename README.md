@@ -319,7 +319,7 @@ command.setParameter('output.mp4');
 command.on('stderr', data => console.error(data));
 command.on('stdout', data => console.log(data));
 
-// The 'output' command is a combination of stderr and stdout
+// The 'output' event combines both stderr and stdout
 command.on('output', data => console.log(data));
 
 // Start the process and wait for it to exit
