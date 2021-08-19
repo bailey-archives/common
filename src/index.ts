@@ -3,6 +3,7 @@ export * from './container/Container';
 
 // Decorators
 export * from './decorators/Reflectable';
+export * from './decorators/Resolvable';
 
 // Events
 export * from './events/EventEmitter';
