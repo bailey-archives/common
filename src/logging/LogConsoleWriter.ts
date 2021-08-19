@@ -44,14 +44,14 @@ export class LogConsoleWriter extends LogWriter {
 		const date = new Date(event.timestamp);
 		const timestampDate = [
 			date.getFullYear(),
-			date.getMonth(),
-			date.getDate(),
+			date.getMonth().toString().padStart(2, '0'),
+			date.getDate().toString().padStart(2, '0'),
 		].join('-');
 
 		const timestampTime = [
-			date.getHours(),
-			date.getMinutes(),
-			date.getSeconds(),
+			date.getHours().toString().padStart(2, '0'),
+			date.getMinutes().toString().padStart(2, '0'),
+			date.getSeconds().toString().padStart(2, '0'),
 		].join(':');
 
 		const timestampMillis = date.getMilliseconds().toString().padStart(3, '0');
