@@ -61,34 +61,15 @@ export abstract class LogWriter {
 	 */
 	private _execute(event: LogEvent) {
 		if (event.level >= this.logLevel) {
-			this._write(event.level, this._format(event));
+			this._write(event);
 		}
-	}
-
-	/**
-	 * Formats log output into a single string for writing.
-	 *
-	 * @param event
-	 */
-	protected _format(event: LogEvent): string {
-		return this._getLogPrefix(event) + event.content;
-	}
-
-	/**
-	 * Returns the prefix to use for the log event. If no prefix should be used, must return an empty string.
-	 *
-	 * @param event
-	 */
-	protected _getLogPrefix(event: LogEvent): string {
-		return '';
 	}
 
 	/**
 	 * Writes log output to the destination.
 	 *
-	 * @param level
-	 * @param text
+	 * @param event An object specifying the details of the log message.
 	 */
-	 protected abstract _write(level: LogLevel, text: string): void | Promise<void>;
+	 protected abstract _write(event: LogEvent): void | Promise<void>;
 
 }

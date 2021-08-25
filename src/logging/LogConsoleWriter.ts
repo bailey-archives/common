@@ -86,11 +86,14 @@ export class LogConsoleWriter extends LogWriter {
 	/**
 	 * Writes log output to the destination.
 	 *
-	 * @param level
-	 * @param text
+	 * @param event An object specifying the details of the log message.
 	 */
-	protected _write(level: LogLevel, text: string) {
-		switch (level) {
+	protected _write(event: LogEvent) {
+		// Build the complete log message
+		const text = this._getLogPrefix(event) + event.content;
+
+		// Write the message to the console
+		switch (event.level) {
 			case LogLevel.Error: return console.error(text);
 			case LogLevel.Warn: return console.warn(text);
 			case LogLevel.Debug:
@@ -98,7 +101,7 @@ export class LogConsoleWriter extends LogWriter {
 			case LogLevel.Info: return console.info(text);
 		}
 
-		throw new Error('Unknown log level: ' + level);
+		throw new Error('Unknown log level: ' + event.level);
 	}
 
 }
