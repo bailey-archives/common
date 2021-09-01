@@ -38,7 +38,6 @@ npm install @baileyherbert/common
 	- [`Command`](#command)
 - [Decorators](#decorators-1)
 	- [`@Reflectable`](#reflectable)
-	- [`@Resolvable`](#resolvable)
 - [Types](#types)
 	- [`Json`](#json)
 	- [`Key<T>`](#keyt)
@@ -47,6 +46,8 @@ npm install @baileyherbert/common
 	- [`Promisable<T>`](#promisablet)
 	- [`Type<T>`](#typet)
 	- [`Action<T>`](#actiont)
+- [Data structures](#data-structures)
+	- [`DependencyGraph`](#dependencygraph)
 
 ---
 
@@ -556,24 +557,6 @@ import { Reflectable } from '@baileyherbert/common';
 class Test {}
 ```
 
-### `@Resolvable`
-
-This is a blank decorator used to trigger decorator emit for dependency injection. It can be applied to both classes and methods.
-
-```ts
-import { Reflectable } from '@baileyherbert/common';
-
-// Adding this decorator to a class will make the parameter types for
-// its constructor visible, which is necessary for dependency injection
-
-@Reflectable()
-class Test {
-	public constructor(a: Foo) {
-
-	}
-}
-```
-
 ---
 
 ## Types
@@ -632,4 +615,63 @@ This type represents a function that accepts any arguments with an optional retu
 
 ```ts
 import { Action } from '@baileyherbert/common';
+```
+
+--
+
+## Data structures
+
+### `DependencyGraph`
+
+This is a simple dependency graph used to detect circular dependencies and determine resolution paths.
+
+```ts
+import { DependencyGraph } from '@baileyherbert/common';
+
+const graph = new DependencyGraph<string>();
+
+// You must add nodes to the graph before attempting computations on them
+graph.addNode('a');
+graph.addNode('b');
+graph.addNode('c');
+
+// Register dependencies (first arg is dependent on the second)
+graph.addDependency('a', 'b');
+graph.addDependency('b', 'c');
+
+// Find dependencies of specific nodes
+graph.getDependenciesOf('a'); // ['c', 'b']
+graph.getDependenciesOf('b'); // ['c']
+
+// Find dependents of nodes
+graph.getDependentsOf('c'); // ['a', 'b']
+
+// Compute overall resolution order
+graph.getOverallOrder(); // ['c', 'b', 'a']
+
+// Compute resolution order of leaves
+graph.getOverallOrder(true); // ['c']
+
+// Allow circular dependencies (false by default)
+graph.allowCircularDependencies = true;
+```
+
+When circular dependencies occur and `allowCircularDependencies` is false, an error will be thrown. You can catch this
+error and use the information within it to determine which nodes are responsible.
+
+```ts
+import { CircularDependencyError } from '@baileyherbert/common';
+
+// Handle circular dependency errors
+try {
+	graph.addDependency('c', 'a');
+	graph.getOverallOrder();
+}
+catch (error) {
+	if (error instanceof CircularDependencyError) {
+		error.path; // ['a', 'b', 'c', 'a']
+		error.node; // 'a'
+		error.message; // Detected circular dependencies (a -> b -> c -> a)
+	}
+}
 ```

@@ -6,6 +6,9 @@ export * from './container/ContainerResolver';
 export * from './container/decorators/Injectable';
 export * from './container/decorators/Singleton';
 
+// Data
+export * from './data/DependencyGraph';
+
 // Decorators
 export * from './decorators/Reflectable';
 export * from './decorators/Resolvable';
