@@ -125,12 +125,24 @@ export class ReflectionClass<T> {
 	}
 
 	/**
+	 * Throws an error if no reflection library is found.
+	 */
+	private ensureReflection() {
+		if (typeof Reflect.getMetadata !== 'function') {
+			throw new Error(
+				'No reflection library could be found. Have you imported "reflect-metadata" into your project?'
+			);
+		}
+	}
+
+	/**
 	 * Returns the value of the metadata under the specified key.
 	 *
 	 * @param name
 	 * @returns
 	 */
 	public getMetadata<T = any>(name: string): T | undefined {
+		this.ensureReflection();
 		return Reflect.getMetadata(name, this._constructor);
 	}
 
@@ -141,6 +153,7 @@ export class ReflectionClass<T> {
 	 * @returns
 	 */
 	public setMetadata(name: string, value: any) {
+		this.ensureReflection();
 		return Reflect.defineMetadata(name, value, this._constructor);
 	}
 
@@ -151,6 +164,7 @@ export class ReflectionClass<T> {
 	 * @returns
 	 */
 	public hasMetadata(name: string) {
+		this.ensureReflection();
 		return Reflect.hasMetadata(name, this._constructor);
 	}
 
