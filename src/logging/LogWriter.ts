@@ -11,11 +11,6 @@ export abstract class LogWriter {
 	private _actions = new Map<Logger, Action<void>>();
 
 	/**
-	 * Enables color output on newly mounted loggers.
-	 */
-	protected _useColor = false;
-
-	/**
 	 * Constructs a new `ConsoleWriter` instance.
 	 *
 	 * @param logLevel Specifies the target logging level to write. Any output below this level will be ignored.
@@ -34,10 +29,6 @@ export abstract class LogWriter {
 			const action = (event: LogEvent) => this._execute(event);
 			this._actions.set(logger, action);
 			logger.on('log', action);
-
-			if (this._useColor && logger.options.colors === undefined) {
-				logger.options.colors = true;
-			}
 		}
 	}
 

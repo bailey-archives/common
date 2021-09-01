@@ -18,7 +18,7 @@ export interface LogEvent {
 	timestamp: number;
 
 	/**
-	 * The text content of the log event.
+	 * The message content of the log event as the original argument array.
 	 */
-	content: string;
+	args: any[];
 }

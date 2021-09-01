@@ -3,6 +3,11 @@ import { LogLevel } from './LogLevel';
 import { LogWriter } from './LogWriter';
 import { Action } from '../types/types';
 import chalk from 'chalk';
+import type { InspectOptions } from 'util';
+
+// @ts-ignore
+const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+const util = isBrowser ? null : require('util');
 
 /**
  * This utility class forwards output from `Logger` instances to the console. It will enable color output on all
@@ -31,9 +36,11 @@ export class LogConsoleWriter extends LogWriter {
 	public logTimestampEnabled = true;
 
 	/**
-	 * Enables color output.
+	 * The options to use when formatting log output. Node only.
 	 */
-	protected _useColor = true;
+	public options: InspectOptions = {
+		colors: true
+	};
 
 	/**
 	 * Returns the prefix to use for the log event. If no prefix should be used, must return an empty string.
@@ -89,8 +96,28 @@ export class LogConsoleWriter extends LogWriter {
 	 * @param event An object specifying the details of the log message.
 	 */
 	protected _write(event: LogEvent) {
+		if (isBrowser) {
+			const prefix = this._getLogPrefix(event);
+
+			if (typeof event.args[0] === 'string') {
+				event.args[0] = prefix + event.args[0];
+			}
+
+			// Write the message to the console
+			switch (event.level) {
+				case LogLevel.Error: return console.error(...event.args);
+				case LogLevel.Warn: return console.warn(...event.args);
+				case LogLevel.Debug:
+				case LogLevel.Verbose: return console.debug(...event.args);
+				case LogLevel.Info: return console.info(...event.args);
+			}
+
+			throw new Error('Unknown log level: ' + event.level);
+		}
+
 		// Build the complete log message
-		const text = this._getLogPrefix(event) + event.content;
+		const content = util.formatWithOptions(this.options, ...event.args);
+		const text = this._getLogPrefix(event) + content;
 
 		// Write the message to the console
 		switch (event.level) {

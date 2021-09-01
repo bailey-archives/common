@@ -1,11 +1,10 @@
-import { Container } from './Container';
+import { Container, container } from './Container';
 
 /**
  * This class provides methods to retrieve container instances.
  */
 class ContainerInstanceResolver {
 
-	private _globalInstance = new Container();
 	private _constructorInstances = new Array<Container>();
 	private _namedInstances = new Map<string, Container>();
 
@@ -13,7 +12,7 @@ class ContainerInstanceResolver {
 	 * Returns the global container instance.
 	 */
 	public getGlobalInstance(): Container {
-		return this._globalInstance;
+		return container;
 	}
 
 	/**
@@ -68,8 +67,3 @@ class ContainerInstanceResolver {
  * This helper provides methods to retrieve container instances.
  */
 export const resolver = new ContainerInstanceResolver();
-
-/**
- * The global container for this application.
- */
-export const container = resolver.getGlobalInstance();

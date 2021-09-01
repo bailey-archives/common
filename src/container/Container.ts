@@ -1,4 +1,3 @@
-import { ReflectionClass } from '../reflection/ReflectionClass';
 import { Type } from '../types/types';
 import { ContainerDispatcher } from './ContainerDispatcher';
 import { registry } from './ContainerRegistry';
@@ -498,3 +497,8 @@ interface Registration<T = any> {
 	options?: RegistrationOptions;
 	instance?: any;
 }
+
+/**
+ * The global container for this application.
+ */
+export const container = new Container();

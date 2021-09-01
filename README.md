@@ -25,6 +25,7 @@ npm install @baileyherbert/common
 - [Logging](#logging)
 	- [`Logger`](#logger)
 	- [`LogConsoleWriter`](#logconsolewriter)
+	- [`LogFileWriter`](#logfilewriter)
 - [Polyfills](#polyfills)
 	- [`Buffer`](#buffer)
 - [Promises](#promises)
@@ -304,16 +305,39 @@ child.info('This is from a child logger!');
 This class can be used to print logger output to the console with colors, timestamps, and service names.
 
 ```ts
-import { Logger, LogConsoleWriter } from '@baileyherbert/common';
+import { Logger, LogConsoleWriter, LogLevel } from '@baileyherbert/common';
 
 // Create the logger
 const logger = new Logger();
 
 // Create the log console writer with verbosity set to 0 (verbose)
-const writer = new LogConsoleWriter(0);
+const writer = new LogConsoleWriter(LogLevel.Verbose);
 
 // Mount the logger to the writer
 // This immediately starts printing output to the console
+writer.mount(logger);
+```
+
+### `LogFileWriter`
+
+This class can be used to forward logger output to a file. It can also rotate the log file automatically after it
+reaches a certain size. The default options are shown below.
+
+```ts
+import { LogFileWriter, LogLevel } from '@baileyherbert/common';
+
+const writer = new LogFileWriter({
+	fileName: 'console.log',
+	logLevel: LogLevel.Info,
+	encoding: 'utf8',
+	formatOptions: {},
+	formatEOL: '\n',             // Uses the system default
+	logRotationSize: 52428800,   // 50 MiB
+	logRotationDir: '.',         // Defaults to the dir of `fileName`
+	logNameEnabled: true,
+	logTimestampEnabled: true
+});
+
 writer.mount(logger);
 ```
 

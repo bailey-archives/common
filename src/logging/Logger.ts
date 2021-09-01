@@ -1,7 +1,7 @@
 import { EventEmitter } from '../events/EventEmitter';
 import { LogEvent } from './LogEvent';
 import { LogLevel } from './LogLevel';
-import util from 'util';
+import type { InspectOptions } from 'util';
 
 /**
  * This utility class allows you to create loggers which support various log levels. The arguments and formatting
@@ -15,17 +15,11 @@ import util from 'util';
  */
 export class Logger extends EventEmitter<Events> {
 
-	/**
-	 * The options to use when formatting log output.
-	 */
-	public options: util.InspectOptions = {};
-
 	public constructor(protected name: string = 'app', protected parent?: Logger) {
 		super();
 
 		// Inherit from the parent if applicable
 		if (parent !== undefined) {
-			this.options = parent.options;
 			this.on('log', event => parent._emit('log', event));
 		}
 	}
@@ -65,7 +59,7 @@ export class Logger extends EventEmitter<Events> {
 			level,
 			name: this.name,
 			timestamp: Date.now(),
-			content: util.formatWithOptions(this.options, ...args)
+			args
 		});
 	}
 
