@@ -15,6 +15,7 @@ export * from './events/EventEmitter';
 
 // Logging
 export * from './logging/LogConsoleWriter';
+export * from './logging/LogFileWriter';
 export * from './logging/LogEvent';
 export * from './logging/LogLevel';
 export * from './logging/LogWriter';
