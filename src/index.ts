@@ -1,5 +1,10 @@
 // Dependency injection
 export * from './container/Container';
+export * from './container/ContainerDispatcher';
+export * from './container/ContainerRegistry';
+export * from './container/ContainerResolver';
+export * from './container/decorators/Injectable';
+export * from './container/decorators/Singleton';
 
 // Decorators
 export * from './decorators/Reflectable';

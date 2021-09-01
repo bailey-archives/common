@@ -10,6 +10,16 @@ npm install @baileyherbert/common
 
 - [Dependency Injection](#dependency-injection)
 	- [`Container`](#container)
+		- [Global container](#global-container)
+		- [Registration](#registration)
+		- [Decorators](#decorators)
+		- [Resolution](#resolution)
+		- [Child containers](#child-containers)
+		- [Dispatchers](#dispatchers)
+		- [Context](#context)
+	- [`resolver`](#resolver)
+		- [Named containers](#named-containers)
+		- [Container references](#container-references)
 - [Events](#events)
 	- [`EventEmitter`](#eventemitter)
 - [Logging](#logging)
@@ -25,7 +35,7 @@ npm install @baileyherbert/common
 	- [`ReflectionMethod`](#reflectionmethod)
 - [Native](#native)
 	- [`Command`](#command)
-- [Decorators](#decorators)
+- [Decorators](#decorators-1)
 	- [`@Reflectable`](#reflectable)
 	- [`@Resolvable`](#resolvable)
 - [Types](#types)
@@ -43,25 +53,185 @@ npm install @baileyherbert/common
 
 ### `Container`
 
-This is a simple container used to create and cache singletons with automatic dependency injection.
+This is a dependency injection container that supports transient, singleton, and container-scoped instance resolution.
+It allows you to spawn child containers, as well as dispatchers for method invocation with DI.
+
+#### Global container
+
+Import the global container from anywhere:
 
 ```ts
-import { Container } from '@baileyherbert/common';
+import { container } from '@baileyherbert/common';
+```
 
-// Create a container
-// Generally you want a single container for an entire application
-const container = new Container();
+#### Registration
 
-// Register objects that can be injected based on type when classes need them
-container.register(new Dependency());
+Then register your types using injection tokens using the register methods.
 
-// Create singletons with dependency injection
-// This instance will be cached and reused for future calls
-const instance = container.singleton(ClassType);
+```ts
+container.register(ClassType);
+container.register(ClassType, { useClass: ClassType });
+container.register(ClassType, { useValue: new ClassType() });
+container.register(ClassType, { useFactory: () => new ClassType() });
 
-// Create new instances with dependency injection
-// These instances are always fresh and never cached
-const instance = container.make(ClassType);
+container.registerSingleton(ClassType);
+container.registerSingleton(ClassType, ClassType);
+
+container.registerInstance(ClassType, new ClassType());
+```
+
+When registering a class or token provider, or a type, you can provide a lifecycle:
+
+```ts
+container.register(ClassType, { lifecycle: Lifecycle.Singleton });
+container.register(ClassType, { useClass: ClassType }, { lifecycle: Lifecycle.ContainerScoped });
+```
+
+- `Transient` creates a new instance for each resolution. This is the default.
+- `Singleton` creates a single instance and caches it for subsequent resolutions.
+- `ContainerScoped` creates a single instance per container (i.e. child containers will get their own).
+
+#### Decorators
+
+For the container to successfully resolve dependencies, all classes added to it must have the `@Injectable` decorator
+applied.
+
+```ts
+@Injectable()
+export class ClassType {}
+```
+
+You can also register a class as a singleton on the global container using the `@Singleton` decorator. This will
+also mark the class as injectable so there's no need to add the `@Injectable` decorator.
+
+```ts
+@Singleton()
+export class ClassType {}
+```
+
+You can also enable dependency injection on a **class method** by applying the `@Injectable` decorator to it.
+
+```ts
+@Singleton()
+export class ClassType {
+	@Injectable()
+	public methodWithDI() {
+
+	}
+}
+```
+
+#### Resolution
+
+To resolve a single instance, use the `resolve` method. The last provider to be registered will be used.
+
+```ts
+const instance = container.resolve(ClassType);
+```
+
+If multiple providers are registered, you can retrieve all of their instances as an array with the `resolveAll` method.
+
+```ts
+const instances = container.resolveAll(ClassType);
+```
+
+#### Child containers
+
+You can create child containers on demand. By registering a dependency on a child container, you can override the
+return value of the `resolve` method. The `resolveAll` method will return an array of dependencies from both containers
+in the order of registration, and with the child container's dependencies last.
+
+```ts
+const child = container.createChildContainer();
+child.registerInstance(ClassType, new ClassType());
+```
+
+#### Dispatchers
+
+To invoke methods with dependency injection, first create a dispatcher.
+
+```ts
+const dispatcher = container.createDispatcher();
+```
+
+You can add custom typed instances which override the container. You can also add named values. If the method
+has a parameter which fails to resolve with the container or has a primitive type, but has a matching named value, then
+the named value will be used.
+
+```ts
+dispatcher.setNamedParameter('name', 'John Doe');
+dispatcher.setTypedParameter(ClassType, new ClassType());
+```
+
+Finally, use the `invoke` method to resolve dependencies, execute, and get the return value.
+
+```ts
+const returnValue = dispatcher.invoke(object, 'methodName');
+```
+
+#### Context
+
+Containers can store basic state information which is available to all of its users.
+
+```ts
+container.setContext('service', 'ServiceName');
+container.setContext('id', 123);
+```
+
+Other parts of the application can retrieve the context.
+
+```ts
+const id = container.getContext<number>('id');
+const service = container.getContext<string>('ServiceName');
+```
+
+### `resolver`
+
+This helper manages global container instances and makes it easy for various parts of the application to retrieve a
+reference to specific containers.
+
+#### Named containers
+
+If the global container is not sufficient, you can use named containers. Simply request a named container and it will
+be created and cached globally.
+
+```ts
+import { resolver } from '@baileyherbert/common';
+
+const container = resolver.getInstance('name');
+```
+
+#### Container references
+
+If your application is using multiple containers, you might be interested in storing a reference to the container used
+to construct an object. Generally, this would require injecting the container as a parameter.
+
+The resolver instead makes the container available with the `getConstructorInstance()` method, but note that this
+method will throw an error if not called from within a constructor that has been invoked by the container during DI.
+
+Here's a reliable pattern for storing the container that works even if the class is extended:
+
+```ts
+import { resolver } from '@baileyherbert/common';
+
+export class DependencyInjectedClass {
+	protected container = resolver.getConstructorInstance();
+
+	public constructor() {
+		// Now all methods, including the constructor, has a reference to the container
+		this.container.resolve();
+	}
+}
+```
+
+With a reference to the container, you could make it easier for nested components in your application to retrieve
+top level objects, like a root `App` object.
+
+```ts
+export class DependencyInjectedClass {
+	protected container = resolver.getConstructorInstance();
+	protected app = this.container.resolve(App);
+}
 ```
 
 ---
