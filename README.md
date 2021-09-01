@@ -370,7 +370,7 @@ You can also specify a custom `action` to execute when the timeout is reached.
 import { PromiseTimeoutSource } from '@baileyherbert/common';
 ```
 
-**Example 1:** Pause for 30 seconds
+**Example 1:** Wait for 30 seconds
 
 ```ts
 await new PromiseTimeoutSource(30000);
@@ -384,7 +384,7 @@ new PromiseTimeoutSource(30000, () => {
 });
 ```
 
-**Example 3:** Run a task after 30 seconds (with early cancellation)
+**Example 3:** Cancel a task before it's scheduled to run
 
 ```ts
 const timeout = new PromiseTimeoutSource(30000, () => {
@@ -398,6 +398,9 @@ setTimeout(() => timeout.cancel(), 15000);
 const result = await timeout;
 console.log('The timeout was', result ? 'fulfilled' : 'cancelled');
 ```
+
+You could use this to cancel and clean up an operation after a specified amount of time, but stop the cancellation
+task from running if it completes in time.
 
 ---
 
